@@ -9,12 +9,16 @@ import (
 	"github.com/kkkfasya/fcaches/internal/cache"
 )
 
-
-
 type ProxyObject struct {
 	mu     sync.RWMutex
 	Origin string
 	Cache  cache.MapCache
+}
+
+type cacheResponse struct {
+	body       []byte
+	cacheState cache.XCacheState
+	cacheKey   string // e.g GET:https://example.com
 }
 
 func NewProxy(origin *url.URL) (*ProxyObject, error) {
@@ -24,8 +28,14 @@ func NewProxy(origin *url.URL) (*ProxyObject, error) {
 	}, nil
 }
 
-
-func RespondWithHeader
+func RespondWithHeaders(w http.ResponseWriter, r *http.Request, resp cacheResponse) {
+	w.Header().Set("X-Cache", string(resp.cacheState))
+	w.WriteHeader(r.Response.StatusCode)
+	for k, v := range r.Response.Header {
+		w.Header()[k] = v
+	}
+	w.Write(resp.body)
+}
 
 func (p *ProxyObject) ClearCache() {
 	p.mu.Lock()
@@ -33,7 +43,6 @@ func (p *ProxyObject) ClearCache() {
 	p.mu.Unlock()
 	log.Print("cache cleared successfully") // TODO: use slog
 }
-
 
 func (p *ProxyObject) ServeProxy(w http.ResponseWriter, r *http.Request) {
 	CACHE_KEY := cache.NewCacheKey(r)

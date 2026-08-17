@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-//i should be able to model the type like: type XCacheState = "HIT" | "MISS"
+//i should be able to model the type as union type like: type XCacheState = "HIT" | "MISS"
 // but since golang type system is god awful...anyway sorry i'll stop
 type XCacheState string
 const (
